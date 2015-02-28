@@ -11,8 +11,8 @@ except:
     sys.exit('[ERROR] no REQUESTS package found')
 
 #######
-api_key_id = 'feba2632'
-api_secret_key = 'ac92cb9010f3de65d4cf962bcb8ee168'
+api_key_id = ''
+api_secret_key = ''
 client_credential = api_key_id + ":" + api_secret_key
 #######
 
