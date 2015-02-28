@@ -4,5 +4,12 @@
     "Version":"/v1",
     "APIKeyID":"EDIT_HERE",
     "APISecretKey":"EDIT_HERE"
+  },
+  "AWS":{
+    "ip_range_url":"https://ip-ranges.amazonaws.com/ip-ranges.json"
+  },
+  "MS":{
+    "ip_range_url":""
   }
+}
 }
