@@ -1,0 +1,8 @@
+{
+  "HALO":{
+    "URL":"https://api.cloudpassage.com",
+    "Version":"/v1",
+    "APIKeyID":"EDIT_HERE",
+    "APISecretKey":"EDIT_HERE"
+  }
+}
