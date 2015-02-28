@@ -11,6 +11,7 @@ except:
     sys.exit('[ERROR] no REQUESTS package found')
 
 #######
+# You need to enter HALO credentials
 api_key_id = ''
 api_secret_key = ''
 client_credential = api_key_id + ":" + api_secret_key
