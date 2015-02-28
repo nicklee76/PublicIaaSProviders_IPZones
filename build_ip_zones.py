@@ -2,7 +2,7 @@
 
 # __author__ = 'nicklee'
 
-import os, json, sys, base64
+import os, json, sys, base64, argparse
 from datetime import datetime
 
 try:
@@ -10,15 +10,25 @@ try:
 except:
     sys.exit('[ERROR] no REQUESTS package found')
 
-#######
-# You need to enter HALO credentials
-api_key_id = ''
-api_secret_key = ''
-client_credential = api_key_id + ":" + api_secret_key
-#######
+parser = argparse.ArgumentParser()
+parser.add_argument('--debug', '-d', action='store_true', default=False,
+                    help='[CoOlNiCk] Enable debug mode')
+parser.add_argument('--config_file', '-c', action='store', default='config.json',
+                    help='[CoOlNiCk] Name of the input file.  Default is [config.json]')
+args = parser.parse_args()
 
-aws_ip_range_url = 'https://ip-ranges.amazonaws.com/ip-ranges.json'
-ms_ip_range_url = ''
+config = json.loads(open(args.config_file, "r").read())
+
+####### HALO API parameters #######
+api_key_id = config['HALO']['APIKeyID']
+api_secret_key = config['HALO']['APISecretKey']
+client_credential = api_key_id + ":" + api_secret_key
+halo_api_url = config['HALO']['URL']
+halo_api_version = config['HALO']['Version']
+####################################
+
+aws_ip_range_url = config['AWS']['ip_range_url']
+ms_ip_range_url = config['MS']['ip_range_url']
 
 current_directory=os.path.dirname(os.path.abspath(__file__))
 
@@ -89,10 +99,10 @@ def check_folders_and_files():
 ###### HALO related functions #####
 def get_headers():
     # Create headers
-    user_credential_b64 = "Basic " + base64.b64encode(client_credential)
-    reply = get_access_token("https://api.cloudpassage.com", "/oauth/access_token?grant_type=client_credentials",
-                             {"Authorization": user_credential_b64})
-    headers = {"Content-type": "application/json", "Authorization": "Bearer " + reply}
+    user_credential_b64 = 'Basic ' + base64.b64encode(client_credential)
+    reply = get_access_token(halo_api_url, '/oauth/access_token?grant_type=client_credentials',
+                             {'Authorization': user_credential_b64})
+    headers = {'Content-type': 'application/json', 'Authorization': 'Bearer ' + reply}
     log_events(log_directory + 'script_logs.log', 'DEBUG', str(datetime.now()),
                '[HALO] Headers created - %s' % headers)
     return headers
@@ -122,11 +132,10 @@ def create_halo_ip_zones(region_ip_list):
        if each.lower() != 'synctoken':
            request_body = {'firewall_zone': {'name': 'AWS-'+each+'['+unique_id+']',
                                              'ip_address': ','.join(map(str, aws_region[each]))}}
-           # print request_body
            status_code = '4xx'
            while status_code != '201':
-               reply = halo_api_call('POST', 'https://api.cloudpassage.com/v1/firewall_zones/',
-                                     data=json.dumps(request_body),headers=headers)
+               reply = halo_api_call('POST', halo_api_url + halo_api_version + '/firewall_zones',
+                                     data=json.dumps(request_body), headers=headers)
                status_code = str(reply.status_code)
 
 
@@ -135,8 +144,6 @@ first_run = check_folders_and_files()
 aws_ip_ranges = json.loads(open(aws_ip_ranges_directory + 'aws_ip_ranges.json', 'r').read())
 log_events(log_directory + 'script_logs.log', 'DEBUG', str(datetime.now()),
                'AWS IP Ranges -\n%s' % json.dumps(aws_ip_ranges, indent = 2))
-
-print first_run
 
 if first_run == True:
     # first time getting the AWS ip range.
