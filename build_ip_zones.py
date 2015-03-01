@@ -5,7 +5,7 @@
 # Requirements:
 
 
-import os, json, sys, base64, argparse
+import os, json, sys, base64, argparse, re
 from datetime import datetime
 
 try:
@@ -140,6 +140,23 @@ def create_halo_ip_zones(region_ip_list):
                reply = halo_api_call('POST', halo_api_url + halo_api_version + '/firewall_zones',
                                      data=json.dumps(request_body), headers=headers)
                status_code = str(reply.status_code)
+
+
+def get_ids_using_name(list, match_condition):
+    match_list=[]
+    for each in list:
+        m=re.match(match_condition, each['name'])
+        if m:
+            log_events(log_directory + 'script_logs.log', 'DEBUG', str(datetime.now()),
+                       '[HALO] Found IP Zone match - %s' % each)
+            if each["id"] == None:
+                item_id = None
+                log_events(log_directory + 'script_logs.log', 'DEBUG', str(datetime.now()),
+                           '[HALO] ID is None - %s' % each)
+            else:
+                item_id = each["id"]
+            match_list.append(item_id)
+    return match_list
 
 
 
