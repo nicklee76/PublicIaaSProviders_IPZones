@@ -1,9 +1,18 @@
 #!/usr/bin/env python
 
 # __author__ = 'nicklee'
+# http://www.cloudpassage.com
 #
-# Requirements:
-
+# Description: Python script to create HALO IP Zones based on AWS and other public IaaS IP ranges
+#
+# Requirements: This script requires following in order for this script to work
+#   Packages:       requests
+#   File(s):        Configuration file called "config.json" file under the '/config' directory (or
+#                   use command line argument - refer to below)
+#
+# Command line / Terminal arguments: The script would take 2 arguments from the terminal / command line.
+#   --debug         Optional (default = False).  Enable debug mode for more information on what is happening.
+#   --config_file   Optional (default = './config/config.json').  HALO and other related information to run the scripts
 
 import os, json, sys, base64, argparse, re
 from datetime import datetime
@@ -17,7 +26,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--debug', '-d', action='store_true', default=False,
                     help='[CoOlNiCk] Enable debug mode')
 parser.add_argument('--config_file', '-c', action='store', default='./config/config.json',
-                    help='[CoOlNiCk] Name of the input file.  Default is [config.json]')
+                    help='[CoOlNiCk] Name of the input file.  Default is [./config/config.json]')
 args = parser.parse_args()
 
 config = json.loads(open(args.config_file, "r").read())
