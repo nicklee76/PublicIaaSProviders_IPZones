@@ -42,6 +42,9 @@ ms_ip_ranges_directory = ip_ranges_directory + 'MS/'
 log_directory=current_directory + '/logs/'
 
 
+####################################################################################################################
+
+
 def log_events(log_file, log_level, event_time, event):
     with open(log_file, 'a+') as f:
         f.write('[' + log_level + '] ' + event_time + ' ' + event + '\n')
