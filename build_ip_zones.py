@@ -70,13 +70,13 @@ def get_file_from_internet(url):
 
 def build_ip_ranges_by_region(ip_ranges_json):
     # aws_region = {'syncToken': '12344567', 'us-east-1': ['10.0.0.0/24', ' 11.0.0.0.0/24'], ...}
-    aws_region = {}
-    aws_region['syncToken'] = ip_ranges_json['syncToken']
+    ip_range_by_region = {}
+    ip_range_by_region['syncToken'] = ip_ranges_json['syncToken']
     for each in ip_ranges_json['prefixes']:
-        if each['region'] not in aws_region.keys():
-            aws_region[each['region']] = []
-        aws_region[each['region']].append(each['ip_prefix'])
-    return aws_region
+        if each['region'] not in ip_range_by_region.keys():
+            ip_range_by_region[each['region']] = []
+        ip_range_by_region[each['region']].append(each['ip_prefix'])
+    return ip_range_by_region
 
 
 def check_folders_and_files():
@@ -186,6 +186,7 @@ def delete_old_ip_zones(dict):
         while status_code != '204':
             #DELETE https://api.cloudpassage.com/v1/firewall_zones/{id}
             reply = halo_api_call('DELETE', halo_api_url+halo_api_version+'/firewall_zones/'+value, data=None, headers=headers)
+            #print reply.status_code
             if str(reply.status_code) == '204':
                 #print('%s, %s' % (key, value))
                 log_events(log_directory + 'script_logs.log', 'DEBUG', str(datetime.now()),
@@ -218,8 +219,9 @@ else:
                'NOT the first time running the script')
     last_aws_synctoken = aws_ip_ranges['syncToken']
     print ('Last sync token %s' % last_aws_synctoken)
-    #latest_aws_synctoken = get_file_from_internet(aws_ip_range_url).json()['syncToken']
-    latest_aws_synctoken = '1424718133'
+    latest_ip_ranges = get_file_from_internet(aws_ip_range_url)
+    latest_aws_synctoken = latest_ip_ranges.json()['syncToken']
+
     print ('Latest sync token %s' % latest_aws_synctoken)
 
     if int(latest_aws_synctoken) > int(last_aws_synctoken):
@@ -236,6 +238,12 @@ else:
         print('Building the new updated ip zones')
         log_events(log_directory + '/script_logs.log', 'DEBUG', str(datetime.now()),
                    'Building the new updated IP Zones')
+        with open(aws_ip_ranges_directory+'aws_ip_ranges.json', 'w+') as f:
+            f.write(json.dumps(latest_ip_ranges.json(), indent = 2, sort_keys = True))
+            log_events(log_directory + 'script_logs.log', 'DEBUG', str(datetime.now()),
+                       'Wrote AWS ip ranges information to aws_ip_ranges.json file')
+            f.close()
+        aws_ip_ranges = json.loads(open(aws_ip_ranges_directory + 'aws_ip_ranges.json', 'r').read())
         aws_region = build_ip_ranges_by_region(aws_ip_ranges)
         log_events(log_directory + '/script_logs.log', 'DEBUG', str(datetime.now()),
                    'Starting to create new HALO IP Zones')
